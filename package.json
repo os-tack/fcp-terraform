@@ -24,12 +24,12 @@
   },
   "devDependencies": {
     "@cdktf/hcl2json": "^0.21.0",
-    "@types/node": "^25.3.2",
-    "typescript": "^5.4.0",
-    "vitest": "^3.1.0"
+    "@types/node": "^22.15.2",
+    "typescript": "^5.8.3",
+    "vitest": "^3.1.1"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "license": "MIT",
   "repository": {

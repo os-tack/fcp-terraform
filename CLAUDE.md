@@ -2,7 +2,7 @@
 
 ## Project Overview
 MCP server that lets LLMs generate Terraform HCL through intent-level operation strings.
-Depends on `@fcp/core` for the shared FCP framework (tokenizer, verb registry, session, events).
+Depends on `@aetherwing/fcp-core` for the shared FCP framework (tokenizer, verb registry, session, events).
 
 ## Architecture
 3-layer architecture:
