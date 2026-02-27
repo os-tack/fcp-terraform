@@ -1,9 +1,22 @@
 {
   "name": "@aetherwing/fcp-terraform",
   "description": "MCP server for Terraform HCL generation",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "author": "Scott Meyer",
   "repository": "https://github.com/aetherwing-io/fcp-terraform",
-  "keywords": ["terraform", "hcl", "infrastructure", "mcp"]
+  "keywords": ["terraform", "hcl", "infrastructure", "mcp"],
+  "mcpServers": {
+    "fcp-terraform": {
+      "command": "node",
+      "args": ["node_modules/@aetherwing/fcp-terraform/dist/index.js"]
+    }
+  },
+  "skills": [
+    {
+      "id": "terraform",
+      "name": "Terraform HCL",
+      "description": "Generate Terraform infrastructure-as-code through resource declarations"
+    }
+  ]
 }
