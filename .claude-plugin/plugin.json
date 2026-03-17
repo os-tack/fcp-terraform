@@ -6,6 +6,6 @@
   "author": {
     "name": "Scott Meyer"
   },
-  "repository": "https://github.com/aetherwing-io/fcp-terraform",
+  "repository": "https://github.com/os-tack/fcp-terraform",
   "keywords": ["terraform", "hcl", "infrastructure", "mcp"]
 }

@@ -1,6 +1,6 @@
 package terraform
 
-import "github.com/aetherwing-io/fcp-terraform/internal/fcpcore"
+import "github.com/os-tack/fcp-terraform/internal/fcpcore"
 
 // TerraformVerbSpecs returns all verb specifications for the Terraform FCP server.
 func TerraformVerbSpecs() []fcpcore.VerbSpec {

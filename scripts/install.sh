@@ -3,7 +3,7 @@ set -euo pipefail
 
 # fcp-terraform installer — downloads the latest release binary for the current platform.
 
-REPO="aetherwing-io/fcp-terraform"
+REPO="os-tack/fcp-terraform"
 BINARY="fcp-terraform"
 
 # Detect OS

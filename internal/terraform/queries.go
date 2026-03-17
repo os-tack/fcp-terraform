@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/aetherwing-io/fcp-terraform/internal/fcpcore"
+	"github.com/os-tack/fcp-terraform/internal/fcpcore"
 )
 
 // DispatchQuery routes a query string to the appropriate handler.

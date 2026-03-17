@@ -9,9 +9,9 @@ import (
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 
-	"github.com/aetherwing-io/fcp-terraform/internal/bridge"
-	"github.com/aetherwing-io/fcp-terraform/internal/fcpcore"
-	"github.com/aetherwing-io/fcp-terraform/internal/terraform"
+	"github.com/os-tack/fcp-terraform/internal/bridge"
+	"github.com/os-tack/fcp-terraform/internal/fcpcore"
+	"github.com/os-tack/fcp-terraform/internal/terraform"
 )
 
 func main() {

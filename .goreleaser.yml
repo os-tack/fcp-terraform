@@ -42,12 +42,12 @@ release:
 
     **Quick install (recommended):**
     ```bash
-    curl -LsSf https://github.com/aetherwing-io/fcp-terraform/releases/latest/download/install.sh | sh
+    curl -LsSf https://github.com/os-tack/fcp-terraform/releases/latest/download/install.sh | sh
     ```
 
     **Go install:**
     ```bash
-    go install github.com/aetherwing-io/fcp-terraform/cmd/fcp-terraform@latest
+    go install github.com/os-tack/fcp-terraform/cmd/fcp-terraform@latest
     ```
 
     **Binary download:** grab your platform's archive above and put `fcp-terraform` on your PATH.

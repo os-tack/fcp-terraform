@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/aetherwing-io/fcp-terraform/internal/fcpcore"
+	"github.com/os-tack/fcp-terraform/internal/fcpcore"
 )
 
 func setupQueryModel() *TerraformModel {

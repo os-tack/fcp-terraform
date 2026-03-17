@@ -1,4 +1,4 @@
-module github.com/aetherwing-io/fcp-terraform
+module github.com/os-tack/fcp-terraform
 
 go 1.25
 

@@ -4,7 +4,7 @@ MCP server for Terraform HCL generation through intent-level commands.
 
 ## What It Does
 
-fcp-terraform lets LLMs build Terraform configurations by describing infrastructure intent -- resources, data sources, variables, outputs -- and renders them into valid HCL. Instead of writing raw HCL syntax, the LLM sends operations like `add resource aws_instance web ami:"ami-0c55b159" instance_type:t2.micro` and fcp-terraform manages the semantic model, dependency graph, and serialization. Built on the [FCP](https://github.com/aetherwing-io/fcp) framework.
+fcp-terraform lets LLMs build Terraform configurations by describing infrastructure intent -- resources, data sources, variables, outputs -- and renders them into valid HCL. Instead of writing raw HCL syntax, the LLM sends operations like `add resource aws_instance web ami:"ami-0c55b159" instance_type:t2.micro` and fcp-terraform manages the semantic model, dependency graph, and serialization. Built on the [FCP](https://github.com/os-tack/fcp) framework.
 
 Written in Go using HashiCorp's `hclwrite` library for native HCL AST generation -- no string concatenation or template rendering.
 
@@ -86,12 +86,12 @@ output "instance_ip" {
 ### Go install
 
 ```bash
-go install github.com/aetherwing-io/fcp-terraform/cmd/fcp-terraform@latest
+go install github.com/os-tack/fcp-terraform/cmd/fcp-terraform@latest
 ```
 
 ### GitHub Releases
 
-Download a prebuilt binary from [Releases](https://github.com/aetherwing-io/fcp-terraform/releases) and put `fcp-terraform` on your PATH.
+Download a prebuilt binary from [Releases](https://github.com/os-tack/fcp-terraform/releases) and put `fcp-terraform` on your PATH.
 
 ### MCP Client Configuration
 

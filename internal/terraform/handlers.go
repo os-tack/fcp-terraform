@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 
-	"github.com/aetherwing-io/fcp-terraform/internal/fcpcore"
+	"github.com/os-tack/fcp-terraform/internal/fcpcore"
 )
 
 // Dispatch routes a ParsedOp to the correct handler.

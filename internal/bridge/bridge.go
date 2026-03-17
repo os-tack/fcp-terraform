@@ -9,8 +9,8 @@ import (
 	"os/user"
 	"strings"
 
-	"github.com/aetherwing-io/fcp-terraform/internal/fcpcore"
-	"github.com/aetherwing-io/fcp-terraform/internal/terraform"
+	"github.com/os-tack/fcp-terraform/internal/fcpcore"
+	"github.com/os-tack/fcp-terraform/internal/terraform"
 )
 
 // Config holds everything needed to route bridge requests.

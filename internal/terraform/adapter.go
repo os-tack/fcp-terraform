@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 
-	"github.com/aetherwing-io/fcp-terraform/internal/fcpcore"
+	"github.com/os-tack/fcp-terraform/internal/fcpcore"
 )
 
 // SnapshotEvent captures before/after HCL bytes for undo/redo.
