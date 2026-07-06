@@ -320,6 +320,18 @@ func TestHandler_Connect(t *testing.T) {
 	}
 }
 
+func TestHandler_Connect_EmitsDependsOnInHCL(t *testing.T) {
+	m := NewModel("test")
+	dispatch("add resource aws_instance web", m)
+	dispatch("add resource aws_vpc vpc", m)
+	dispatch("connect web -> vpc label:depends_on", m)
+
+	hcl := string(m.Bytes())
+	if !strings.Contains(hcl, "depends_on = [aws_vpc.vpc]") {
+		t.Errorf("connect should emit a real depends_on entry in the HCL, got:\n%s", hcl)
+	}
+}
+
 func TestHandler_Connect_NoArrow(t *testing.T) {
 	m := NewModel("test")
 	dispatch("add resource aws_instance web", m)

@@ -311,6 +311,92 @@ func TestModel_Connect_And_Disconnect(t *testing.T) {
 	}
 }
 
+func TestModel_Connect_EmitsDependsOn(t *testing.T) {
+	m := NewModel("test")
+	m.AddResource("aws_instance", "web", nil, nil)
+	m.AddResource("aws_vpc", "vpc", nil, nil)
+
+	if err := m.Connect("web", "vpc", "depends_on"); err != nil {
+		t.Fatalf("Connect: %v", err)
+	}
+
+	hcl := string(m.Bytes())
+	if !strings.Contains(hcl, "depends_on = [aws_vpc.vpc]") {
+		t.Errorf("expected depends_on referencing aws_vpc.vpc, got:\n%s", hcl)
+	}
+}
+
+func TestModel_Connect_DataSourceReference(t *testing.T) {
+	m := NewModel("test")
+	m.AddResource("aws_instance", "web", nil, nil)
+	m.AddDataSource("aws_ami", "ubuntu", nil, nil)
+
+	if err := m.Connect("web", "ubuntu", ""); err != nil {
+		t.Fatalf("Connect: %v", err)
+	}
+
+	hcl := string(m.Bytes())
+	if !strings.Contains(hcl, "depends_on = [data.aws_ami.ubuntu]") {
+		t.Errorf("expected depends_on referencing data.aws_ami.ubuntu, got:\n%s", hcl)
+	}
+}
+
+func TestModel_Connect_AppendsToExistingDependsOn(t *testing.T) {
+	m := NewModel("test")
+	m.AddResource("aws_instance", "web", nil, nil)
+	m.AddResource("aws_vpc", "vpc", nil, nil)
+	m.AddDataSource("aws_ami", "ubuntu", nil, nil)
+
+	if err := m.Connect("web", "vpc", ""); err != nil {
+		t.Fatalf("Connect(vpc): %v", err)
+	}
+	if err := m.Connect("web", "ubuntu", ""); err != nil {
+		t.Fatalf("Connect(ubuntu): %v", err)
+	}
+
+	hcl := string(m.Bytes())
+	if !strings.Contains(hcl, "depends_on = [data.aws_ami.ubuntu, aws_vpc.vpc]") {
+		t.Errorf("expected depends_on with both targets, got:\n%s", hcl)
+	}
+}
+
+func TestModel_Disconnect_ShrinksDependsOn(t *testing.T) {
+	m := NewModel("test")
+	m.AddResource("aws_instance", "web", nil, nil)
+	m.AddResource("aws_vpc", "vpc", nil, nil)
+	m.AddDataSource("aws_ami", "ubuntu", nil, nil)
+	m.Connect("web", "vpc", "")
+	m.Connect("web", "ubuntu", "")
+
+	if err := m.Disconnect("web", "vpc"); err != nil {
+		t.Fatalf("Disconnect: %v", err)
+	}
+
+	hcl := string(m.Bytes())
+	if !strings.Contains(hcl, "depends_on = [data.aws_ami.ubuntu]") {
+		t.Errorf("expected depends_on with only ubuntu remaining, got:\n%s", hcl)
+	}
+	if strings.Contains(hcl, "aws_vpc.vpc]") || strings.Contains(hcl, "vpc,") {
+		t.Errorf("did not expect vpc in depends_on after disconnect, got:\n%s", hcl)
+	}
+}
+
+func TestModel_Disconnect_RemovesDependsOnWhenEmpty(t *testing.T) {
+	m := NewModel("test")
+	m.AddResource("aws_instance", "web", nil, nil)
+	m.AddResource("aws_vpc", "vpc", nil, nil)
+	m.Connect("web", "vpc", "")
+
+	if err := m.Disconnect("web", "vpc"); err != nil {
+		t.Fatalf("Disconnect: %v", err)
+	}
+
+	hcl := string(m.Bytes())
+	if strings.Contains(hcl, "depends_on") {
+		t.Errorf("expected depends_on attribute removed entirely, got:\n%s", hcl)
+	}
+}
+
 func TestModel_Connect_NotFound(t *testing.T) {
 	m := NewModel("test")
 	m.AddResource("aws_instance", "web", nil, nil)

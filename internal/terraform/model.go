@@ -2,6 +2,7 @@ package terraform
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/hashicorp/hcl/v2"
@@ -182,7 +183,10 @@ func (m *TerraformModel) UnsetAttributes(label string, keys []string) error {
 	return nil
 }
 
-// Connect adds a logical connection between two blocks.
+// Connect adds a logical connection between two blocks and emits a real
+// depends_on = [...] entry on the source block's HCL body, so the edge is
+// not just bookkeeping for the `graph` query — it actually affects the
+// generated configuration.
 func (m *TerraformModel) Connect(src, dst, edgeLabel string) error {
 	srcRef := m.resolveRef(src)
 	if srcRef == nil {
@@ -200,10 +204,13 @@ func (m *TerraformModel) Connect(src, dst, edgeLabel string) error {
 		m.Index.Connections[srcKey] = make(map[string]string)
 	}
 	m.Index.Connections[srcKey][dstKey] = edgeLabel
+
+	m.syncDependsOn(srcRef)
 	return nil
 }
 
-// Disconnect removes a logical connection between two blocks.
+// Disconnect removes a logical connection between two blocks and re-renders
+// the source block's depends_on to match the remaining edges.
 func (m *TerraformModel) Disconnect(src, dst string) error {
 	srcRef := m.resolveRef(src)
 	if srcRef == nil {
@@ -223,7 +230,82 @@ func (m *TerraformModel) Disconnect(src, dst string) error {
 			delete(m.Index.Connections, srcKey)
 		}
 	}
+
+	m.syncDependsOn(srcRef)
 	return nil
+}
+
+// syncDependsOn rewrites the depends_on attribute on ref's HCL block from
+// the full current set of ref's outgoing connections. Rebuilding the whole
+// list (rather than trying to patch individual tokens in place) means
+// Connect naturally appends to whatever was already there and Disconnect
+// naturally drops just its own entry, while staying correct regardless of
+// how the attribute was last written.
+func (m *TerraformModel) syncDependsOn(ref *BlockRef) {
+	key := strings.ToLower(ref.Label)
+	targets := m.Index.Connections[key]
+	body := ref.Block.Body()
+
+	dstKeys := make([]string, 0, len(targets))
+	for dst := range targets {
+		dstKeys = append(dstKeys, dst)
+	}
+	sort.Strings(dstKeys)
+
+	var tokenGroups []hclwrite.Tokens
+	for _, dstKey := range dstKeys {
+		dstRef := m.resolveConnectionTarget(dstKey)
+		if dstRef == nil {
+			continue // stale edge (e.g. target label now ambiguous); skip rather than corrupt HCL
+		}
+		tokenGroups = append(tokenGroups, hclwrite.TokensForTraversal(dependencyTraversal(dstRef)))
+	}
+
+	if len(tokenGroups) == 0 {
+		body.RemoveAttribute("depends_on")
+		return
+	}
+
+	body.SetAttributeRaw("depends_on", hclwrite.TokensForTuple(tokenGroups))
+}
+
+// resolveConnectionTarget looks up a block by the lowercased label used as
+// the key in Index.Connections, falling back to a scan for the case where
+// the label has since become ambiguous across multiple block types.
+func (m *TerraformModel) resolveConnectionTarget(lowerLabel string) *BlockRef {
+	if ref := m.Index.Get(lowerLabel); ref != nil {
+		return ref
+	}
+	for _, ref := range m.Index.ByQualified {
+		if strings.ToLower(ref.Label) == lowerLabel {
+			return ref
+		}
+	}
+	return nil
+}
+
+// dependencyTraversal builds the hcl.Traversal used to reference ref inside
+// a depends_on = [...] expression, following Terraform's addressing rules
+// per block kind: resource -> TYPE.LABEL, data -> data.TYPE.LABEL,
+// module -> module.LABEL, variable -> var.LABEL.
+func dependencyTraversal(ref *BlockRef) hcl.Traversal {
+	var parts []string
+	switch ref.Kind {
+	case "data":
+		parts = []string{"data", ref.FullType, ref.Label}
+	case "module":
+		parts = []string{"module", ref.Label}
+	case "variable":
+		parts = []string{"var", ref.Label}
+	default: // resource, provider, or anything else addressed as TYPE.LABEL
+		parts = []string{ref.FullType, ref.Label}
+	}
+
+	traversal := hcl.Traversal{hcl.TraverseRoot{Name: parts[0]}}
+	for _, p := range parts[1:] {
+		traversal = append(traversal, hcl.TraverseAttr{Name: p})
+	}
+	return traversal
 }
 
 // resolveRef finds a BlockRef by label, trying plain label then qualified format.
