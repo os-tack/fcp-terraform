@@ -1,10 +1,10 @@
 # fcp-terraform
 
-MCP server for Terraform HCL generation through intent-level commands.
+A reference implementation of the FCP pattern in Go, with an embedded `fcpcore` port (`internal/fcpcore/`). Terraform HCL is a format most LLMs already write fluently by hand, so this project's main value isn't as a production authoring tool -- it's as a working example of the 3-layer FCP architecture (MCP intent layer -> semantic domain model -> FCP core) implemented natively in Go against a real, non-trivial target format via HashiCorp's `hclwrite`.
 
 ## What It Does
 
-fcp-terraform lets LLMs build Terraform configurations by describing infrastructure intent -- resources, data sources, variables, outputs -- and renders them into valid HCL. Instead of writing raw HCL syntax, the LLM sends operations like `add resource aws_instance web ami:"ami-0c55b159" instance_type:t2.micro` and fcp-terraform manages the semantic model, dependency graph, and serialization. Built on the [FCP](https://github.com/os-tack/fcp) framework.
+fcp-terraform lets an LLM build Terraform configurations by describing infrastructure intent -- resources, data sources, variables, outputs -- and renders them into valid HCL. Instead of writing raw HCL syntax, the caller sends operations like `add resource aws_instance web ami:"ami-0c55b159" instance_type:t2.micro` and fcp-terraform manages the semantic model, dependency graph, and serialization. Built on the [FCP](https://github.com/os-tack/fcp) framework.
 
 Written in Go using HashiCorp's `hclwrite` library for native HCL AST generation -- no string concatenation or template rendering.
 
@@ -50,7 +50,7 @@ output "instance_ip" {
 | Tool | Purpose |
 |------|---------|
 | `terraform(ops)` | Batch mutations -- add, set, remove, connect, nest, label, style |
-| `terraform_query(q)` | Inspect the config -- map, list, describe, plan, graph, validate, find |
+| `terraform_query(q)` | Inspect the config -- map, list, describe, plan, graph, find |
 | `terraform_session(action)` | Lifecycle -- new, open, save, checkpoint, undo, redo |
 | `terraform_help()` | Full reference card |
 
@@ -64,7 +64,7 @@ output "instance_ip" {
 | `add output` | `add output NAME value:EXPR [description:D]` |
 | `add data` | `add data TYPE LABEL [key:value...]` |
 | `add module` | `add module LABEL source:PATH [key:value...]` |
-| `connect` | `connect SRC -> TGT [label:TEXT]` |
+| `connect` | `connect SRC -> TGT [label:TEXT]` -- emits a real `depends_on = [...]` entry on SRC's HCL block, in addition to recording the edge for the `graph` query |
 | `set` | `set LABEL key:value [key:value...]` |
 | `nest` | `nest LABEL BLOCK_TYPE[/CHILD_TYPE] [key:value...]` |
 | `remove` | `remove LABEL` or `remove @SELECTOR` |
