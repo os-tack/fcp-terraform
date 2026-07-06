@@ -225,6 +225,32 @@ func TestEventLog_CanUndo(t *testing.T) {
 	}
 }
 
+// TestEventLog_Checkpoint_TruncatesRedoTail is a regression test for a bug
+// where Checkpoint appended its sentinel without truncating the redo tail
+// first, unlike Append. After append x3; undo(2); checkpoint(), the two
+// undone-but-never-reapplied events ("b", "c") were left dangling past the
+// checkpoint sentinel with the cursor jumped to the end of the log. A
+// subsequent Undo would then hand the caller "c" to reverse-apply again,
+// even though the model was never replayed forward past "a" — corrupting
+// model state. Checkpoint must truncate exactly like Append does.
+func TestEventLog_Checkpoint_TruncatesRedoTail(t *testing.T) {
+	log := NewEventLog()
+	log.Append("a")
+	log.Append("b")
+	log.Append("c")
+	log.Undo(2)
+	log.Checkpoint("cp")
+
+	if log.Length() != 2 { // "a" + checkpoint sentinel; "b","c" must be gone
+		t.Fatalf("length = %d, want 2 (a, cp)", log.Length())
+	}
+
+	undone := log.Undo(1)
+	if len(undone) != 1 || undone[0] != "a" {
+		t.Errorf("Undo(1) after checkpoint = %v, want [a]", undone)
+	}
+}
+
 func TestEventLog_CanRedo(t *testing.T) {
 	log := NewEventLog()
 	if log.CanRedo() {

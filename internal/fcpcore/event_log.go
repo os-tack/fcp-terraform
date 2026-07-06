@@ -46,6 +46,15 @@ func (l *EventLog) Append(event any) {
 // Checkpoint creates a named checkpoint at the current cursor position.
 func (l *EventLog) Checkpoint(name string) {
 	l.checkpoints[name] = l.cursor
+	if l.cursor < len(l.events) {
+		l.events = l.events[:l.cursor]
+		// Remove checkpoints pointing beyond new length
+		for n, idx := range l.checkpoints {
+			if idx > l.cursor {
+				delete(l.checkpoints, n)
+			}
+		}
+	}
 	l.events = append(l.events, checkpointEntry{name: name})
 	l.cursor = len(l.events)
 }
